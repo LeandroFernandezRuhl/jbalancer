@@ -1,7 +1,10 @@
 package com.leandroruhl.jbalancer;
 
+import groovy.util.logging.Slf4j;
+import org.junit.Before;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -13,8 +16,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -72,6 +74,17 @@ public class LoadBalancerTest {
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(loadBalancerUrl, requestBody, String.class);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals("User successfully created!", responseEntity.getBody());
+    }
+
+    @Test
+    public void testLoadDistribution() {
+        RestTemplate restTemplate = new RestTemplate();
+        String loadBalancerUrl = "http://localhost:" + port + "/api/hello";
+        String response1 = restTemplate.getForObject(loadBalancerUrl, String.class);
+        assertTrue(response1.startsWith("Hello from server running on port"));
+        String response2 = restTemplate.getForObject(loadBalancerUrl, String.class);
+        assertTrue(response2.startsWith("Hello from server running on port"));
+        assertNotEquals(response1, response2); // ports should be different
     }
 }
 

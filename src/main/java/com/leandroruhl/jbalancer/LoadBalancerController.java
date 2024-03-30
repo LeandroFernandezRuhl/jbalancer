@@ -18,7 +18,7 @@ import java.util.ArrayList;
 @Slf4j
 public class LoadBalancerController {
     private final WebClient webClient;
-    private ArrayList<String> serverUrls;
+    private final ArrayList<String> serverUrls;
     private Integer requestCounter;
 
     public LoadBalancerController(WebClient.Builder webClientBuilder) {
