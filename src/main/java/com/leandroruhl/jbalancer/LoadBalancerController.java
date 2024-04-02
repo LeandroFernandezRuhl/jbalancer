@@ -2,9 +2,7 @@ package com.leandroruhl.jbalancer;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,15 +16,15 @@ import java.util.ArrayList;
 @Slf4j
 public class LoadBalancerController {
     private final WebClient webClient;
-    private final ArrayList<String> serverUrls;
+    private final ArrayList<Server> servers;
     private Integer requestCounter;
 
     public LoadBalancerController(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.build();
         this.requestCounter = 0;
-        this.serverUrls = new ArrayList<>();
-        serverUrls.add("http://localhost:8081");
-        serverUrls.add("http://localhost:8082");
+        this.servers = new ArrayList<>();
+        servers.add(new Server("http://localhost:8081", ""));
+        servers.add(new Server("http://localhost:8082", ""));
     }
 
     @RequestMapping(value = "/**")
@@ -57,6 +55,7 @@ public class LoadBalancerController {
 
 
     private String determineBackendServerUrl() {
-        return serverUrls.get(requestCounter % serverUrls.size());
+        Server server = servers.get(requestCounter % servers.size());
+        return server.getBaseUrl();
     }
 }
