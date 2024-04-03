@@ -1,10 +1,11 @@
 package com.leandroruhl.jbalancer;
 
-import groovy.util.logging.Slf4j;
-import org.junit.Before;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -26,12 +27,18 @@ public class LoadBalancerTest {
     @Container
     private static final GenericContainer<?> backend1 = new GenericContainer<>(DockerImageName.parse("backend-image:latest"))
             .withEnv("SERVER_PORT", "8081")
-            .withExposedPorts(8081);
+            .withExposedPorts(8081)
+            .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(
+                    new HostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(8081), new ExposedPort(8081)))
+            ));
 
     @Container
     private static final GenericContainer<?> backend2 = new GenericContainer<>(DockerImageName.parse("backend-image:latest"))
             .withEnv("SERVER_PORT", "8082")
-            .withExposedPorts(8082);
+            .withExposedPorts(8082)
+            .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(
+                    new HostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(8082), new ExposedPort(8082)))
+            ));
 
     @BeforeAll
     static void beforeAll() {
